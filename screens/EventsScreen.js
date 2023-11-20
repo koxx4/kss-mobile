@@ -26,10 +26,10 @@ export default function EventsScreen() {
     const fetchEvents = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`http://rpi.local:8080/api/kss/events/latest?page=${page}&limit=${limit}`);
+            const response = await fetch(`http://10.0.2.2:8080/api/kss/events/latest?page=${page}&limit=${limit}`);
             const data = await response.json();
             const eventsWithImages = await Promise.all(data.map(async (event) => {
-                const imageUrl = `http://rpi.local:8080/api/kss/events/${event.id}/image`
+                const imageUrl = `http://10.0.2.2:8080/api/kss/events/${event.id}/image`
                 return {...event, imageUrl};
             }));
             setEvents(prevEvents => [...eventsWithImages]);
@@ -56,7 +56,9 @@ export default function EventsScreen() {
     }, [page, limit]);
 
     const renderEvent = ({item}) => (
-        <View style={[styles.eventItem, item.important ? styles.importantEvent : null]}>
+        <View
+            style={[styles.eventItem, item.important ? styles.importantEvent : null, !item.read ? styles.unreadEventItem : null]}>
+            {!item.read && <Text style={styles.eventText}>NOWY</Text>}
             <Text style={styles.eventText}>Nazwa: {item.name}</Text>
             <Text style={styles.eventText}>Ilość: {item.count}</Text>
             <Text style={styles.eventText}>Pewność: {Number(item.confidence * 100).toFixed(2)}%</Text>
@@ -122,20 +124,40 @@ const styles = StyleSheet.create({
         padding: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.23,
+        shadowRadius: 2.62,
+        elevation: 4,  // dla Androida
+    },
+    unreadEventItem: {
+        borderColor: '#5ba6ff', // jasnoniebieski kolor tła
+        borderWidth: 5,
+        padding: 10,
+        marginVertical: 8,
+        marginHorizontal: 16,
     },
     importantEvent: {
         margin: 10,
-        backgroundColor: '#ffdddd', // Czerwony kolor tła dla ważnych eventów
+        backgroundColor: '#E6AA68', // Czerwony kolor tła dla ważnych eventów
         borderRadius: 10
     },
     eventText: {
-        fontSize: 16,
+        fontSize: 18,
+        fontFamily: 'Lato-Black'
     },
     image: {
-        width: 100,
-        height: 100,
-        resizeMode: 'contain',
-        marginTop: 10,
+        width: 200,
+        height: 200,
+        resizeMode: 'cover',
+        marginVertical: 10,
+        borderRadius: 5
     },
     fullscreenModal: {
         flex: 1,
@@ -159,12 +181,12 @@ const styles = StyleSheet.create({
     },
     saveButton: {
         padding: 10,
-        margin: 10,
-        backgroundColor: 'blue',
+        backgroundColor: '#F3D06C',
         borderRadius: 5,
+        shadowColor: "#000",
+        elevation: 2,
     },
     saveButtonText: {
-        color: 'white',
         fontSize: 16,
     },
     paginationContainer: {
