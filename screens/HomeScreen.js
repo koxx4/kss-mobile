@@ -14,7 +14,7 @@ export default function HomeScreen({navigation}) {
     const checkConnection = async () => {
         setLastChecked(new Date());
         try {
-            const response = await fetch('http://10.0.2.2:8080/api/kss/health');
+            const response = await fetch('http://localhost:8080/api/kss/health');
             if (response.status === 200) {
                 setIsConnected(true);
             } else {
@@ -30,7 +30,7 @@ export default function HomeScreen({navigation}) {
         if (!isConnected) return;
 
         try {
-            const response = await fetch('http://10.0.2.2:8080/api/kss/events/unread');
+            const response = await fetch('http://localhost:8080/api/kss/events/unread');
             if (response.status === 200) {
 
                 const count = await response.text();
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     },
     lastCheckedContainer: {
         gap: 5,
-        // backgroundColor: '#E6AA68',
+        backgroundColor: '#e9f3bc',
         padding: 10,
         shadowColor: "#000",
         shadowOffset: {

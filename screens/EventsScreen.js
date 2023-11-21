@@ -26,10 +26,10 @@ export default function EventsScreen() {
     const fetchEvents = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`http://10.0.2.2:8080/api/kss/events/latest?page=${page}&limit=${limit}`);
+            const response = await fetch(`http://localhost:8080/api/kss/events/latest?page=${page}&limit=${limit}`);
             const data = await response.json();
             const eventsWithImages = await Promise.all(data.map(async (event) => {
-                const imageUrl = `http://10.0.2.2:8080/api/kss/events/${event.id}/image`
+                const imageUrl = `http://localhost:8080/api/kss/events/${event.id}/image`
                 return {...event, imageUrl};
             }));
             setEvents(prevEvents => [...eventsWithImages]);
@@ -124,6 +124,9 @@ const styles = StyleSheet.create({
         padding: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#eee',
+        backgroundColor: '#e9f3bc',
+        marginVertical: 10,
+        marginHorizontal: 16,
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
@@ -137,10 +140,6 @@ const styles = StyleSheet.create({
         elevation: 4,  // dla Androida
     },
     unreadEventItem: {
-        borderColor: '#5ba6ff', // jasnoniebieski kolor tła
-        borderWidth: 5,
-        padding: 10,
-        marginVertical: 8,
         marginHorizontal: 16,
     },
     importantEvent: {
