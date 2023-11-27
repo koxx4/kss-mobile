@@ -1,8 +1,24 @@
 import React, {useEffect, useState} from 'react';
 import {ActivityIndicator, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import { BlurView } from 'expo-blur';
 import * as KssUtil from '../util/Utils'
 import PaginationButton from "../components/PaginationButton";
+import {KSS_SERVER_URL} from "../util/Config";
 
+const objectTranslations = {
+    "Fire": "Ogień",
+    "Smoke": "Dym",
+    "Human": "Człowiek",
+    "Other": "Inne",
+    "Open pot": "Otwarty garnek",
+    "Open pot boiling": "Gotujący się otwarty garnek",
+    "Closed pot": "Zamknięty garnek",
+    "Closed pot boiling": "Gotujący się zamknięty garnek",
+    "Dish": "Naczynie",
+    "Gas": "Gaz",
+    "Pan": "Patelnia",
+    "Closed pan": "Zamknięta patelnia",
+};
 
 export default function EventsScreen() {
     const [events, setEvents] = useState([]);
@@ -26,10 +42,10 @@ export default function EventsScreen() {
     const fetchEvents = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`http://localhost:8080/api/kss/events/latest?page=${page}&limit=${limit}`);
+            const response = await fetch(`${KSS_SERVER_URL}/api/kss/events/latest?page=${page}&limit=${limit}`);
             const data = await response.json();
             const eventsWithImages = await Promise.all(data.map(async (event) => {
-                const imageUrl = `http://localhost:8080/api/kss/events/${event.id}/image`
+                const imageUrl = `${KSS_SERVER_URL}/api/kss/events/image?imageId=${event.imageId}`
                 return {...event, imageUrl};
             }));
             setEvents(prevEvents => [...eventsWithImages]);
@@ -55,12 +71,26 @@ export default function EventsScreen() {
         fetchEvents();
     }, [page, limit]);
 
+    const renderDetectedObjectsTable = (objects) => {
+        return (
+            <View style={styles.table}>
+                {Object.entries(objects).map(([key, value]) => (
+                    <View key={key} style={styles.tableRow}>
+                        <Text style={styles.tableCell}>{objectTranslations[key] || key}</Text>
+                        <Text style={styles.tableCell}>{value}</Text>
+                    </View>
+                ))}
+            </View>
+        );
+    };
+
     const renderEvent = ({item}) => (
         <View
             style={[styles.eventItem, item.important ? styles.importantEvent : null, !item.read ? styles.unreadEventItem : null]}>
             {!item.read && <Text style={styles.eventText}>NOWY</Text>}
-            <Text style={styles.eventText}>Nazwa: {item.name}</Text>
-            <Text style={styles.eventText}>Ilość: {item.count}</Text>
+            <View style={styles.detectedObjectsContainer}>
+                {renderDetectedObjectsTable(item.objects)}
+            </View>
             <Text style={styles.eventText}>Pewność: {Number(item.confidence * 100).toFixed(2)}%</Text>
             <Text style={styles.eventText}>Data: {new Date(item.date).toLocaleString()}</Text>
             <Text style={styles.eventText}>Ważne: {item.important ? 'Tak' : 'Nie'}</Text>
@@ -80,11 +110,15 @@ export default function EventsScreen() {
 
     return (
         <View style={styles.container}>
+            {isLoading &&
+                <BlurView style={styles.loading} intensity={5}>
+                    <ActivityIndicator size='large' />
+                </BlurView>
+            }
             <FlatList
                 data={events}
                 keyExtractor={(item, index) => 'event-' + index}
                 renderItem={renderEvent}
-                ListFooterComponent={isLoading && <ActivityIndicator/>}
             />
             <Modal
                 animationType="slide"
@@ -99,12 +133,14 @@ export default function EventsScreen() {
                 </View>
             </Modal>
             <View style={styles.paginationContainer}>
-                <PaginationButton
-                    onPress={() => setPage(page - 1)}
-                    iconName="arrow-back"
-                    text="Poprzednia"
-                    disabled={page === 1}
-                />
+                { page > 1 &&
+                    <PaginationButton
+                        onPress={() => setPage(page - 1)}
+                        iconName="arrow-back"
+                        text="Poprzednia"
+                        disabled={page === 1}
+                    />
+                }
                 <Text style={styles.pageNumberText}>Strona {page}</Text>
                 <PaginationButton
                     onPress={() => setPage(page + 1)}
@@ -117,6 +153,12 @@ export default function EventsScreen() {
 }
 
 const styles = StyleSheet.create({
+    loading: {
+        ...StyleSheet.absoluteFill,
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1
+    },
     container: {
         flex: 1,
     },
@@ -201,5 +243,25 @@ const styles = StyleSheet.create({
     pageNumberText: {
         fontSize: 16,
         color: 'black',
+    },
+    table: {
+        alignSelf: 'stretch',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 4,
+        paddingHorizontal: 10,
+        borderBottomWidth: 1,
+    },
+    tableCell: {
+        flex: 1,
+    },
+    detectedObjectsContainer: {
+        marginVertical: 5,
+        alignSelf: 'stretch',
+        backgroundColor: '#e9f3cd',
+        borderRadius: 5,
+        borderWidth: 1,
     },
 });
