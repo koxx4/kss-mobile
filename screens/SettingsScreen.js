@@ -37,7 +37,7 @@ export default function SettingsScreen() {
             await AsyncStorage.setItem('themeSettings', JSON.stringify({isDarkTheme}));
 
             // Wysłanie pozostałych ustawień na serwer
-            const response = await fetch(`${KSS_SERVER_URL}/api/kss/settings`, {
+            const response = await fetch(`${KSS_SERVER_URL}/api/kss/preferences`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
