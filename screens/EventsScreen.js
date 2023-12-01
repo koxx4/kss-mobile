@@ -1,24 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import {ActivityIndicator, FlatList, Image, Modal, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import { BlurView } from 'expo-blur';
+import {BlurView} from 'expo-blur';
 import * as KssUtil from '../util/Utils'
+import {objectTranslations} from '../util/Utils'
 import PaginationButton from "../components/PaginationButton";
 import {KSS_SERVER_URL} from "../util/Config";
-
-const objectTranslations = {
-    "Fire": "Ogień",
-    "Smoke": "Dym",
-    "Human": "Człowiek",
-    "Other": "Inne",
-    "Open pot": "Otwarty garnek",
-    "Open pot boiling": "Gotujący się otwarty garnek",
-    "Closed pot": "Zamknięty garnek",
-    "Closed pot boiling": "Gotujący się zamknięty garnek",
-    "Dish": "Naczynie",
-    "Gas": "Gaz",
-    "Pan": "Patelnia",
-    "Closed pan": "Zamknięta patelnia",
-};
 
 export default function EventsScreen() {
     const [events, setEvents] = useState([]);
@@ -27,7 +13,6 @@ export default function EventsScreen() {
     const [selectedImage, setSelectedImage] = useState(null);
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(10);
-
 
     const openModal = (imageUrl) => {
         setSelectedImage(imageUrl);
@@ -74,10 +59,11 @@ export default function EventsScreen() {
     const renderDetectedObjectsTable = (objects) => {
         return (
             <View style={styles.table}>
-                {Object.entries(objects).map(([key, value]) => (
-                    <View key={key} style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{objectTranslations[key] || key}</Text>
-                        <Text style={styles.tableCell}>{value}</Text>
+                {objects.map((obj, index) => (
+                    <View key={index} style={styles.tableRow}>
+                        <Text style={styles.tableCell}>{objectTranslations[obj.name] || obj.name}</Text>
+                        <Text style={styles.tableCell}>Ilość: {obj.count}</Text>
+                        <Text style={styles.tableCell}>Pewność: {(obj.avgConfidence * 100).toFixed(2)}%</Text>
                     </View>
                 ))}
             </View>
@@ -91,7 +77,7 @@ export default function EventsScreen() {
             <View style={styles.detectedObjectsContainer}>
                 {renderDetectedObjectsTable(item.objects)}
             </View>
-            <Text style={styles.eventText}>Pewność: {Number(item.confidence * 100).toFixed(2)}%</Text>
+            <Text style={styles.eventText}>Średnia pewność: {Number(item.avgConfidence * 100).toFixed(2)}%</Text>
             <Text style={styles.eventText}>Data: {new Date(item.date).toLocaleString()}</Text>
             <Text style={styles.eventText}>Ważne: {item.important ? 'Tak' : 'Nie'}</Text>
             {item.imageUrl && (
@@ -103,7 +89,6 @@ export default function EventsScreen() {
                         <Text style={styles.saveButtonText}>Zapisz Obraz</Text>
                     </TouchableOpacity>
                 </>
-
             )}
         </View>
     );
@@ -112,7 +97,7 @@ export default function EventsScreen() {
         <View style={styles.container}>
             {isLoading &&
                 <BlurView style={styles.loading} intensity={5}>
-                    <ActivityIndicator size='large' />
+                    <ActivityIndicator size='large'/>
                 </BlurView>
             }
             <FlatList
@@ -133,7 +118,7 @@ export default function EventsScreen() {
                 </View>
             </Modal>
             <View style={styles.paginationContainer}>
-                { page > 1 &&
+                {page > 1 &&
                     <PaginationButton
                         onPress={() => setPage(page - 1)}
                         iconName="arrow-back"

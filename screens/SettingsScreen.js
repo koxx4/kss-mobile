@@ -1,28 +1,45 @@
 import React, {useContext, useEffect, useState} from 'react';
-import {View, Text, StyleSheet, Switch, Button, ScrollView, TouchableOpacity, Alert} from 'react-native';
+import {ActivityIndicator, Alert, ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View} from 'react-native';
 import {ThemeContext} from '../context/ThemeContext';
 import Slider from "@react-native-community/slider";
 import {KSS_SERVER_URL} from "../util/Config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
-
-const eventTypes = ["Fire", "Smoke", "Human", "Other", "Open pot", "Open pot boiling", "Closed pot", "Closed pot boiling", "Dish", "Gas", "Pan", "Closed pan"];
+import {objectTranslations} from "../util/Utils";
 
 export default function SettingsScreen() {
     const {isDarkTheme, setIsDarkTheme, themes} = useContext(ThemeContext);
     const [inputThreshold, setInputThreshold] = useState(0);
     const [outputThreshold, setOutputThreshold] = useState(0);
-    const [eventsConfig, setEventsConfig] = useState({});
+    const [eventsConfig, setEventsConfig] = useState([{}]);
+    const [isLoading, setIsLoading] = useState(true);
     const theme = isDarkTheme ? themes.dark : themes.light;
 
     useEffect(() => {
         loadSettings();
     }, []);
 
+    const fetchSettings = async () => {
+        try {
+            const response = await fetch(`${KSS_SERVER_URL}/api/kss/preferences`);
+            if (!response.ok) {
+                throw new Error('Nie można pobrać ustawień');
+            }
+            const data = await response.json();
+            setInputThreshold(data.inputThreshold);
+            setOutputThreshold(data.outputThreshold);
+            setEventsConfig(data.eventsConfig)
+        } catch (error) {
+            Alert.alert('Błąd', 'Nie udało się pobrać ustawień: ' + error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const loadSettings = async () => {
         const settings = JSON.parse(await AsyncStorage.getItem('themeSettings'))
         console.debug(settings)
         setIsDarkTheme(settings.isDarkTheme)
+        await fetchSettings()
     };
 
     const handleSaveSettings = async () => {
@@ -37,7 +54,7 @@ export default function SettingsScreen() {
             await AsyncStorage.setItem('themeSettings', JSON.stringify({isDarkTheme}));
 
             // Wysłanie pozostałych ustawień na serwer
-            const response = await fetch(`${KSS_SERVER_URL}/api/kss/settings`, {
+            const response = await fetch(`${KSS_SERVER_URL}/api/kss/preferences`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -51,24 +68,29 @@ export default function SettingsScreen() {
                 Alert.alert(
                     "Błąd Zapisu",
                     "Nie udało się zapisać ustawień. Spróbuj ponownie.",
-                    [{ text: "OK" }]
+                    [{text: "OK"}]
                 );
             }
         } catch (error) {
             Alert.alert(
                 "Błąd Zapisu",
                 "Nie udało się zapisać ustawień. Spróbuj ponownie.",
-                [{ text: "OK" }]
+                [{text: "OK"}]
             );
         }
     };
 
-    const updateEventConfig = (type, value, isImportant) => {
-        setEventsConfig(prev => ({
-            ...prev,
-            [type]: {important: isImportant, precisionThreshold: value}
-        }));
+    const updateEventConfig = (eventName, precisionThreshold, important) => {
+        setEventsConfig(prev => prev.map(event =>
+            event.eventName === eventName
+                ? {...event, important, precisionThreshold}
+                : event
+        ));
     };
+
+    if (isLoading) {
+        return <ActivityIndicator size="large"/>;
+    }
 
     return (
         <ScrollView>
@@ -105,26 +127,29 @@ export default function SettingsScreen() {
                         onValueChange={value => setOutputThreshold(value)}
                     />
                 </View>
-                {eventTypes.map(type => (
-                    <View style={styles.settingItemSegmentH} key={type}>
+                {eventsConfig.map(event => (
+                    <View style={styles.settingItemSegmentH} key={event.eventName}>
                         <View style={styles.settingItem}>
-                            <Text style={[styles.settingText, {color: theme.text}]}>{type} - ważny?</Text>
+                            <Text
+                                style={[styles.settingText, {color: theme.text}]}>{objectTranslations[event.eventName]} -
+                                ważny?</Text>
                             <Switch
-                                value={eventsConfig[type]?.important || false}
-                                onValueChange={(value) => updateEventConfig(type, eventsConfig[type]?.precisionThreshold || 50, value)}
+                                value={event.important}
+                                onValueChange={(value) => updateEventConfig(event.eventName, event.precisionThreshold, value)}
                             />
                         </View>
                         <View>
 
                         </View>
-                        <Text style={[styles.settingText, {color: theme.text}]}>Próg pewności {eventsConfig[type]?.precisionThreshold || 50}%</Text>
+                        <Text style={[styles.settingText, {color: theme.text}]}>Próg
+                            pewności {event.precisionThreshold}%</Text>
                         <Slider
                             style={{width: 200}}
                             minimumValue={50}
                             maximumValue={100}
                             step={1}
-                            value={eventsConfig[type]?.precisionThreshold || 50}
-                            onValueChange={(value) => updateEventConfig(type, value, eventsConfig[type]?.important || false)}
+                            value={event.precisionThreshold}
+                            onValueChange={(value) => updateEventConfig(event.eventName, value, event.important)}
                         />
                     </View>
                 ))}

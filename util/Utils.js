@@ -2,6 +2,20 @@ import * as FileSystem from 'expo-file-system';
 import * as MediaLibrary from 'expo-media-library';
 import moment from 'moment';
 
+export const objectTranslations = {
+    "Fire": "Ogień",
+    "Smoke": "Dym",
+    "Human": "Człowiek",
+    "Other": "Inne",
+    "Open pot": "Otwarty garnek",
+    "Open pot boiling": "Gotujący się otwarty garnek",
+    "Closed pot": "Zamknięty garnek",
+    "Closed pot boiling": "Gotujący się zamknięty garnek",
+    "Dish": "Naczynie",
+    "Gas": "Gaz",
+    "Pan": "Patelnia",
+    "Closed pan": "Zamknięta patelnia",
+};
 export const handleDownload = async (url) => {
     let date = moment().format('YYYYMMDDhhmmss')
     let fileUri = FileSystem.documentDirectory + `${date}.jpg`;
