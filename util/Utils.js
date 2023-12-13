@@ -3,18 +3,18 @@ import * as MediaLibrary from 'expo-media-library';
 import moment from 'moment';
 
 export const objectTranslations = {
-    "Fire": "Ogień",
-    "Smoke": "Dym",
-    "Human": "Człowiek",
-    "Other": "Inne",
-    "Open pot": "Otwarty garnek",
-    "Open pot boiling": "Gotujący się otwarty garnek",
-    "Closed pot": "Zamknięty garnek",
-    "Closed pot boiling": "Gotujący się zamknięty garnek",
-    "Dish": "Naczynie",
-    "Gas": "Gaz",
-    "Pan": "Patelnia",
-    "Closed pan": "Zamknięta patelnia",
+    "fire": "Ogień",
+    "smoke": "Dym",
+    "human": "Człowiek",
+    "other": "Inne",
+    "open_pot": "Otwarty garnek",
+    "open_pot_boiling": "Gotujący się otwarty garnek",
+    "closed_pot": "Zamknięty garnek",
+    "closed_pot_boiling": "Gotujący się zamknięty garnek",
+    "dish": "Naczynie",
+    "gas": "Gaz",
+    "pan": "Patelnia",
+    "closed_pan": "Zamknięta patelnia",
 };
 export const handleDownload = async (url) => {
     let date = moment().format('YYYYMMDDhhmmss')

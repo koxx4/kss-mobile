@@ -37,8 +37,13 @@ export default function SettingsScreen() {
 
     const loadSettings = async () => {
         const settings = JSON.parse(await AsyncStorage.getItem('themeSettings'))
+
         console.debug(settings)
-        setIsDarkTheme(settings.isDarkTheme)
+
+        if (settings) {
+            setIsDarkTheme(settings.isDarkTheme)
+        }
+
         await fetchSettings()
     };
 
@@ -64,6 +69,11 @@ export default function SettingsScreen() {
 
             if (response.ok) {
                 console.log('Ustawienia zapisane pomyślnie.');
+                Alert.alert(
+                    "Hura!",
+                    "Ustawienia zapisane pomyślnie.",
+                    [{text: "OK"}]
+                );
             } else {
                 Alert.alert(
                     "Błąd Zapisu",

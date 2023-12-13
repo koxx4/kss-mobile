@@ -42,16 +42,6 @@ export default function EventsScreen() {
         }
     };
 
-    const fetchImage = async (eventId) => {
-        try {
-            const response = await fetch(``);
-            const blob = await response.blob();
-            return URL.createObjectURL(blob);
-        } catch (error) {
-            console.error('Błąd podczas pobierania obrazu:', error);
-        }
-    };
-
     useEffect(() => {
         fetchEvents();
     }, [page, limit]);

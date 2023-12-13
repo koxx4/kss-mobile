@@ -18,6 +18,8 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.koxx4.kssmobile",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -25,6 +27,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6a6635e8-f0cc-4470-a272-30ecafbee1fe"
+      }
     }
   }
 }

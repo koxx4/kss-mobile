@@ -36,3 +36,4 @@ yarn-error.*
 .idea/
 /%ProgramData%/
 coverage/**/*
+/google-services.json
